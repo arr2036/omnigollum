@@ -101,7 +101,7 @@ module Omnigollum
       :route_prefix => '/__omnigollum__',
       :dummy_auth   => true,
       :providers    => Proc.new { provider :github, '', '' },
-      :path_base    => dir = File.dirname(File.expand_path(__FILE__)),
+      :path_base    => dir = File.expand_path(File.dirname(__FILE__) + '/..'),
       :logo_suffix  => "_logo.png",
       :logo_missing => "omniauth", # Set to false to disable missing logos
       :path_images  => "#{dir}/public/images",

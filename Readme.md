@@ -19,6 +19,12 @@ To configure both omniauth and omnigollum you should add the following to your c
 require 'omnigollum'
 ```
 
+### Load individual provider libraries
+```ruby
+require 'omniauth/strategies/twitter'
+require 'omniauth/strategies/open_id'
+```
+
 ### Set configuration
 ```ruby
 options = {
@@ -48,7 +54,7 @@ the current HEAD.
 
 ### gollum
 
-Merge the commits from [here](https://github.com/github/gollum/pull/181) and [here]
+Merge the commits from [here](https://github.com/github/gollum/pull/181)
 
 
 

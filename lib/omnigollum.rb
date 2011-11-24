@@ -18,10 +18,10 @@ module Omnigollum
         @uid = hash['uid']
         raise OmniauthUserInitError, "Invalid data from provider, 'uid' must not be empty or whitespace" if @uid.to_s.strip.empty?
     
-        @name = hash['user_info']['name'].to_s.strip
-        raise OmniauthUserInitError, "Invalid data from provider, 'user_info => name' must not be empty or whitespace" if @name.empty?
+        @name = hash['info']['name'].to_s.strip
+        raise OmniauthUserInitError, "Invalid data from provider, 'info => name' must not be empty or whitespace" if @name.empty?
     
-        @email    = hash['user_info']['email'].to_s.strip if hash['user_info'].has_key?('email')
+        @email    = hash['info']['email'].to_s.strip if hash['info'].has_key?('email')
         @provider = hash['provider']
         self
       end
@@ -156,7 +156,7 @@ module Omnigollum
         OmniAuth.config.test_mode = true 
         OmniAuth.config.mock_auth[:default] = {
           'uid' => '12345',
-            "user_info" => {
+            "info" => {
             "email"  => "user@example.com",
             "name"   => "example user"
           },

@@ -201,7 +201,7 @@ module Omnigollum
       app.before options[:route_prefix] + '/auth/failure' do
         user_deauth
         @title    = 'Authentication failed'
-        @subtext = 'Provider did not validate your credentials (#{param[:message]}) - please retry or choose another login service'
+        @subtext = "Provider did not validate your credentials (#{params["message"]}) - please retry or choose another login service"
         @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" if !request.env['omniauth.origin'].nil?
         show_login
       end

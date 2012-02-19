@@ -2,8 +2,13 @@
 
 ## Installation
 
-Clone into your ruby library path. This will be repackaged as a gem once various dependencies
-have accepted pull requests or rolled versions (see required patches).
+### Rubygem
+
+A [rubygem](https://rubygems.org/gems/omniauth-bibanon) using prepatched dependencies has been made available by the Bibliotheca Anonoma for your convenience. Click the link for more info.
+
+### Manual
+
+Clone into your ruby library path.
 
     git clone git://github.com/arr2036/omnigollum.git
 
@@ -51,6 +56,8 @@ Precious::App.register Omnigollum::Sinatra
 
 Must be at v0.99.5 (currently unreleased), replace the gem version with 6c4e12d58844d99909df or
 the current HEAD.
+
+
 
 ### gollum
 

@@ -67,9 +67,17 @@ module Omnigollum
     end
     
     def show_login
-      auth_config
-      require settings.send(:omnigollum)[:path_views] + '/login'
-      halt mustache Omnigollum::Views::Login
+      options = settings.send(:omnigollum)
+
+      # Don't bother showing the login screen, just redirect
+      if options[:provider_names].count == 1
+         redirect options[:route_prefix] + '/auth/' + options[:provider_names].first.to_s + "?origin=" +
+           (!request.path.nil? ? CGI.escape(request.path) : '/')
+      else
+         auth_config
+         require options[:path_views] + '/login'
+         halt mustache Omnigollum::Views::Login
+      end
     end
 
     def commit_message
@@ -91,12 +99,12 @@ module Omnigollum
       
     @default_options = {
       :protected_routes => [
-      '/revert/*',
-      '/revert',
-      '/create/*',
-      '/create',
-      '/edit/*',
-      '/edit'],
+        '/revert/*',
+        '/revert',
+        '/create/*',
+        '/create',
+        '/edit/*',
+        '/edit'],
       
       :route_prefix => '/__omnigollum__',
       :dummy_auth   => true,
@@ -177,19 +185,22 @@ module Omnigollum
         config.eval_omniauth_config &options[:providers] if options[:provider_names].count == 0
       end
       
-      # Pre-empt protected routes
-      options[:protected_routes].each { |route| app.before(route) { user_auth unless user_authed? }}
-      
       # Populates instance variables used to display currently logged in user
       app.before '/*' do
         @user_authed = user_authed?
         @user        = get_user
       end
+
+      # Stop browsers from screwing up our referrer information
+      # FIXME: This is hacky...
+      app.before '/favicon.ico' do
+        halt 403 unless user_authed? 
+      end
       
       # Explicit login (user followed login link) clears previous redirect info
       app.before options[:route_prefix] + '/login' do
         kick_back if user_authed?
-        @auth_params = "?origin=#{CGI.escape(request.referrer)}" if !request.referrer.nil?
+        @auth_params = "?origin=#{CGI.escape(request.referrer)}" unless request.referrer.nil?
         user_auth
       end
       
@@ -202,7 +213,7 @@ module Omnigollum
         user_deauth
         @title    = 'Authentication failed'
         @subtext = 'Provider did not validate your credentials (' + params[:message] + ') - please retry or choose another login service'
-        @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" if !request.env['omniauth.origin'].nil?
+        @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?
         show_login
       end
 
@@ -214,13 +225,13 @@ module Omnigollum
           elsif !user_authed?
             @title    = 'Authentication failed'
             @subtext = "Omniauth experienced an error processing your request"
-            @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" if !request.env['omniauth.origin'].nil?
+            @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?
             show_login
           end
         rescue Omnigollum::Models::OmniauthUserInitError => fail_reason
           @title    = 'Authentication failed'
           @subtext = fail_reason
-          @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" if !request.env['omniauth.origin'].nil?
+          @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?
           show_login
         end
       end
@@ -234,7 +245,10 @@ module Omnigollum
       app.before options[:route_prefix] + '/auth/:provider' do 
         halt 404
       end
-
+      
+      # Pre-empt protected routes
+      options[:protected_routes].each {|route| app.before(route) {user_auth unless user_authed?}}
+      
       # Write the actual config back to the app instance
       app.set(:omnigollum, options)
     end

@@ -15,13 +15,15 @@ module Omnigollum
     class OmniauthUser < User
       def initialize (hash)
         # Validity checks, don't trust providers 
-        @uid = hash['uid']
-        raise OmniauthUserInitError, "Invalid data from provider, 'uid' must not be empty or whitespace" if @uid.to_s.strip.empty?
+        @uid = hash['uid'].to_s.strip
+        raise OmniauthUserInitError, "Insufficient data from authentication provider, uid not provided or empty" if @uid.empty?
     
-        @name = hash['info']['name'].to_s.strip
-        raise OmniauthUserInitError, "Invalid data from provider, 'info => name' must not be empty or whitespace" if @name.empty?
+        @name = hash['info']['name'].to_s.strip  if hash['info'].has_key?('name')
+        raise OmniauthUserInitError, "Insufficient data from authentication provider, name not provided or empty" if !@name || @name.empty?
     
-        @email    = hash['info']['email'].to_s.strip if hash['info'].has_key?('email')
+        @email = hash['info']['email'].to_s.strip if hash['info'].has_key?('email')
+        raise OmniauthUserInitError, "Insufficient data from authentication provider, email not provided or empty" if !@email || @email.empty?
+        
         @provider = hash['provider']
         self
       end
@@ -30,7 +32,7 @@ module Omnigollum
   
   module Helpers
     def user_authed?
-      session.has_key? :auth_user
+      session.has_key? :omniauth_user
     end
   
     def user_auth
@@ -47,11 +49,11 @@ module Omnigollum
     end
   
     def get_user
-      session[:auth_user]
+      session[:omniauth_user]
     end
   
     def user_deauth
-      session.delete :auth_user
+      session.delete :omniauth_user
     end
     
     def auth_config
@@ -220,16 +222,24 @@ module Omnigollum
       app.before options[:route_prefix] + '/auth/:name/callback' do
         begin
           if !request.env['omniauth.auth'].nil? 
-            session[:auth_user] = Omnigollum::Models::OmniauthUser.new(request.env['omniauth.auth'])            
+            user = Omnigollum::Models::OmniauthUser.new(request.env['omniauth.auth'])
+            session[:omniauth_user] = user
+            
+            # Update gollum's author hash, so commits are recorded correctly
+            session['gollum.author'] = {
+              :name => user.uid + ' (' + user.name + ')',
+              :email => user.email
+            }
+
             redirect request.env['omniauth.origin']
           elsif !user_authed?
-            @title    = 'Authentication failed'
+            @title   = 'Authentication failed'
             @subtext = "Omniauth experienced an error processing your request"
             @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?
             show_login
           end
         rescue Omnigollum::Models::OmniauthUserInitError => fail_reason
-          @title    = 'Authentication failed'
+          @title   = 'Authentication failed'
           @subtext = fail_reason
           @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?
           show_login

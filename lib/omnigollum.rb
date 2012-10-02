@@ -9,7 +9,7 @@ module Omnigollum
     class OmniauthUserInitError < StandardError; end
     
     class User
-      attr_reader :uid, :name, :email, :provider
+      attr_reader :uid, :name, :email, :nickname, :provider
     end 
     
     class OmniauthUser < User
@@ -23,6 +23,8 @@ module Omnigollum
     
         @email = hash['info']['email'].to_s.strip if hash['info'].has_key?('email')
         raise OmniauthUserInitError, "Insufficient data from authentication provider, email not provided or empty" if !@email || @email.empty?
+        
+        @nickname = hash['info']['nickname'].to_s.strip if hash['info'].has_key?('nickname')
         
         @provider = hash['provider']
         self
@@ -227,7 +229,9 @@ module Omnigollum
             
             # Update gollum's author hash, so commits are recorded correctly
             session['gollum.author'] = {
-              :name => user.uid + ' (' + user.name + ')',
+              :name => user.nickname ?
+            	user.name + ' (' + user.nickname + ')' :
+            	user.name,
               :email => user.email
             }
 

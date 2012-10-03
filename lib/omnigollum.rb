@@ -13,15 +13,19 @@ module Omnigollum
     end 
     
     class OmniauthUser < User
-      def initialize (hash)
+      def initialize (hash, options)
         # Validity checks, don't trust providers 
         @uid = hash['uid'].to_s.strip
         raise OmniauthUserInitError, "Insufficient data from authentication provider, uid not provided or empty" if @uid.empty?
-    
-        @name = hash['info']['name'].to_s.strip  if hash['info'].has_key?('name')
+
+   	@name = hash['info']['name'].to_s.strip if hash['info'].has_key?('name')
+        @name = options[:default_name] if @name.empty?
+        	
         raise OmniauthUserInitError, "Insufficient data from authentication provider, name not provided or empty" if !@name || @name.empty?
     
-        @email = hash['info']['email'].to_s.strip if hash['info'].has_key?('email')
+    	@email = hash['info']['email'].to_s.strip if hash['info'].has_key?('email')
+        @email = options[:default_email] if @email.empty?
+        	 
         raise OmniauthUserInitError, "Insufficient data from authentication provider, email not provided or empty" if !@email || @email.empty?
         
         @nickname = hash['info']['nickname'].to_s.strip if hash['info'].has_key?('nickname')
@@ -119,6 +123,8 @@ module Omnigollum
       :path_images  => "#{dir}/public/images",
       :path_views   => "#{dir}/views",
       :path_templates => "#{dir}/templates",
+      :default_name   => nil,
+      :default_email  => nil,
       :provider_names => []
     }
       
@@ -224,14 +230,14 @@ module Omnigollum
       app.before options[:route_prefix] + '/auth/:name/callback' do
         begin
           if !request.env['omniauth.auth'].nil? 
-            user = Omnigollum::Models::OmniauthUser.new(request.env['omniauth.auth'])
+            user = Omnigollum::Models::OmniauthUser.new(request.env['omniauth.auth'], options)
             session[:omniauth_user] = user
             
             # Update gollum's author hash, so commits are recorded correctly
             session['gollum.author'] = {
               :name => user.nickname ?
-            	user.name + ' (' + user.nickname + ')' :
-            	user.name,
+                user.name + ' (' + user.nickname + ')' :
+                user.name,
               :email => user.email
             }
 

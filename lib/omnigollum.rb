@@ -79,8 +79,8 @@ module Omnigollum
 
       # Don't bother showing the login screen, just redirect
       if options[:provider_names].count == 1
-        if !request.env['omniauth.origin'].nil?
-          origin = request.env['omniauth.origin']
+        if !request.params['origin'].nil?
+          origin = request.params['origin']
         elsif !request.path.nil?
           origin = request.path
         else

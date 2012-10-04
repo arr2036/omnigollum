@@ -79,8 +79,16 @@ module Omnigollum
 
       # Don't bother showing the login screen, just redirect
       if options[:provider_names].count == 1
-         redirect options[:route_prefix] + '/auth/' + options[:provider_names].first.to_s + "?origin=" +
-           (!request.path.nil? ? CGI.escape(request.path) : '/')
+        if !request.env['omniauth.origin'].nil?
+          origin = request.env['omniauth.origin']
+        elsif !request.path.nil?
+          origin = request.path
+        else
+          origin = '/'
+        end
+         
+        redirect options[:route_prefix] + '/auth/' + options[:provider_names].first.to_s + "?origin=" +
+           CGI.escape(origin)
       else
          auth_config
          require options[:path_views] + '/login'
@@ -248,7 +256,7 @@ module Omnigollum
             @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?
             show_login
           end
-        rescue Omnigollum::Models::OmniauthUserInitError => fail_reason
+        rescue StandardError => fail_reason
           @title   = 'Authentication failed'
           @subtext = fail_reason
           @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?

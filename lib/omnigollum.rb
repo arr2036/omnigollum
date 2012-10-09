@@ -19,12 +19,12 @@ module Omnigollum
         raise OmniauthUserInitError, "Insufficient data from authentication provider, uid not provided or empty" if @uid.empty?
 
    	@name = hash['info']['name'].to_s.strip if hash['info'].has_key?('name')
-        @name = options[:default_name] if @name.empty?
+        @name = options[:default_name] if !@name || @name.empty?
         	
         raise OmniauthUserInitError, "Insufficient data from authentication provider, name not provided or empty" if !@name || @name.empty?
     
     	@email = hash['info']['email'].to_s.strip if hash['info'].has_key?('email')
-        @email = options[:default_email] if @email.empty?
+        @email = options[:default_email] if !@email || @email.empty?
         	 
         raise OmniauthUserInitError, "Insufficient data from authentication provider, email not provided or empty" if !@email || @email.empty?
         

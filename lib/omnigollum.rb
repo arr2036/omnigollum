@@ -120,7 +120,9 @@ module Omnigollum
         '/create/*',
         '/create',
         '/edit/*',
-        '/edit'],
+        '/edit',
+        '/delete/*',
+        '/delete'],
       
       :route_prefix => '/__omnigollum__',
       :dummy_auth   => true,

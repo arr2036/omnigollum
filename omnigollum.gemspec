@@ -24,7 +24,5 @@ Gem::Specification.new do |s|
 Omnigollum adds support for OmniAuth in Gollum. It executes an OmniAuth::Builder proc/block to figure out which providers you've configured, then passes it on to omniauth to create the actual omniauth configuration.
 
 See https://github.com/arr2036/omnigollum for usage instructions.
-
-Some of Omnigollum's dependencies had to be patched before use. These patches have already been made into dependent gems for your convenience.
 desc
 end

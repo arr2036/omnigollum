@@ -18,12 +18,12 @@ module Omnigollum
         @uid = hash['uid'].to_s.strip
         raise OmniauthUserInitError, "Insufficient data from authentication provider, uid not provided or empty" if @uid.empty?
 
-   	@name = hash['info']['name'].to_s.strip if hash['info'].has_key?('name')
+        @name = hash['info']['name'].to_s.strip if hash['info'].has_key?('name')
         @name = options[:default_name] if !@name || @name.empty?
-        	
+
         raise OmniauthUserInitError, "Insufficient data from authentication provider, name not provided or empty" if !@name || @name.empty?
-    
-    	@email = hash['info']['email'].to_s.strip if hash['info'].has_key?('email')
+
+        @email = hash['info']['email'].to_s.strip if hash['info'].has_key?('email')
         @email = options[:default_email] if !@email || @email.empty?
         	 
         raise OmniauthUserInitError, "Insufficient data from authentication provider, email not provided or empty" if !@email || @email.empty?
@@ -31,6 +31,13 @@ module Omnigollum
         @nickname = hash['info']['nickname'].to_s.strip if hash['info'].has_key?('nickname')
         
         @provider = hash['provider']
+
+        # do not check access restrictions if no users are specified
+        unless options[:authorized_users].empty?
+          # raise if authenticated user's email is not specified in access control
+          raise OmniauthUserInitError, "User not authorized for access" unless options[:authorized_users].include?(@email)
+        end
+  
         self
       end
     end    
@@ -76,7 +83,7 @@ module Omnigollum
     
     def show_login
       options = settings.send(:omnigollum)
-
+         
       # Don't bother showing the login screen, just redirect
       if options[:provider_names].count == 1
         if !request.params['origin'].nil?
@@ -136,6 +143,7 @@ module Omnigollum
       :default_name   => nil,
       :default_email  => nil,
       :provider_names => []
+      :authorized_users => []
     }
       
     def initialize
@@ -184,13 +192,13 @@ module Omnigollum
         OmniAuth.config.test_mode = true 
         OmniAuth.config.mock_auth[:default] = {
           'uid' => '12345',
-            "info" => {
+          "info" => {
             "email"  => "user@example.com",
             "name"   => "example user"
-          },
-          'provider' => 'local'
-        }
-      end
+            },
+            'provider' => 'local'
+          }
+        end
       # Register helpers
       app.helpers Helpers
       
@@ -246,8 +254,8 @@ module Omnigollum
             # Update gollum's author hash, so commits are recorded correctly
             session['gollum.author'] = {
               :name => user.nickname ?
-                user.name + ' (' + user.nickname + ')' :
-                user.name,
+              user.name + ' (' + user.nickname + ')' :
+              user.name,
               :email => user.email
             }
 

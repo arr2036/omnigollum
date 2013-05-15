@@ -18,19 +18,26 @@ module Omnigollum
         @uid = hash['uid'].to_s.strip
         raise OmniauthUserInitError, "Insufficient data from authentication provider, uid not provided or empty" if @uid.empty?
 
-   	@name = hash['info']['name'].to_s.strip if hash['info'].has_key?('name')
+        @name = hash['info']['name'].to_s.strip if hash['info'].has_key?('name')
         @name = options[:default_name] if !@name || @name.empty?
-        	
+
         raise OmniauthUserInitError, "Insufficient data from authentication provider, name not provided or empty" if !@name || @name.empty?
-    
-    	@email = hash['info']['email'].to_s.strip if hash['info'].has_key?('email')
+
+        @email = hash['info']['email'].to_s.strip if hash['info'].has_key?('email')
         @email = options[:default_email] if !@email || @email.empty?
-        	 
+
         raise OmniauthUserInitError, "Insufficient data from authentication provider, email not provided or empty" if !@email || @email.empty?
         
         @nickname = hash['info']['nickname'].to_s.strip if hash['info'].has_key?('nickname')
         
         @provider = hash['provider']
+
+        # do not check access restrictions if no users are specified
+        unless options[:authorized_users].empty?
+          # raise if authenticated user's email is not specified in access control
+          raise OmniauthUserInitError, "User not authorized for access" unless options[:authorized_users].include?(@email)
+        end
+
         self
       end
     end    
@@ -40,7 +47,7 @@ module Omnigollum
     def user_authed?
       session.has_key? :omniauth_user
     end
-  
+
     def user_auth
       @title   = 'Authentication is required'
       @subtext = 'Please choose a login service'
@@ -49,15 +56,15 @@ module Omnigollum
     
     def kick_back
       redirect !request.referrer.nil? && request.referrer !~ /#{Regexp.escape(settings.send(:omnigollum)[:route_prefix])}\/.*/ ?
-        request.referrer:
-        '/'
+      request.referrer:
+      '/'
       halt
     end
-  
+
     def get_user
       session[:omniauth_user]
     end
-  
+
     def user_deauth
       session.delete :omniauth_user
     end
@@ -86,33 +93,33 @@ module Omnigollum
         else
           origin = '/'
         end
-         
-        redirect options[:route_prefix] + '/auth/' + options[:provider_names].first.to_s + "?origin=" +
-           CGI.escape(origin)
-      else
-         auth_config
-         require options[:path_views] + '/login'
-         halt mustache Omnigollum::Views::Login
-      end
-    end
 
-    def commit_message
-      if user_authed?
-        user = get_user
-        return { :message => params[:message], :name => user.name, :email => user.email}
+        redirect options[:route_prefix] + '/auth/' + options[:provider_names].first.to_s + "?origin=" +
+        CGI.escape(origin)
       else
-        return { :message => params[:message]}
-      end
+       auth_config
+       require options[:path_views] + '/login'
+       halt mustache Omnigollum::Views::Login
+     end
+   end
+
+   def commit_message
+    if user_authed?
+      user = get_user
+      return { :message => params[:message], :name => user.name, :email => user.email}
+    else
+      return { :message => params[:message]}
     end
   end
-  
+end
+
   # Config class provides default values for omnigollum configuration, and an array
   # of all providers which have been enabled if a omniauth config block is passed to
   # eval_omniauth_config.
   class Config
     attr_accessor :default_options
     class << self; attr_accessor :default_options; end  
-      
+
     @default_options = {
       :protected_routes => [
         '/revert/*',
@@ -123,21 +130,22 @@ module Omnigollum
         '/edit',
         '/delete/*',
         '/delete'],
-      
-      :route_prefix => '/__omnigollum__',
-      :dummy_auth   => true,
-      :providers    => Proc.new { provider :github, '', '' },
-      :path_base    => dir = File.expand_path(File.dirname(__FILE__) + '/..'),
-      :logo_suffix  => "_logo.png",
+
+        :route_prefix => '/__omnigollum__',
+        :dummy_auth   => true,
+        :providers    => Proc.new { provider :github, '', '' },
+        :path_base    => dir = File.expand_path(File.dirname(__FILE__) + '/..'),
+        :logo_suffix  => "_logo.png",
       :logo_missing => "omniauth", # Set to false to disable missing logos
       :path_images  => "#{dir}/public/images",
       :path_views   => "#{dir}/views",
       :path_templates => "#{dir}/templates",
       :default_name   => nil,
       :default_email  => nil,
-      :provider_names => []
+      :provider_names => [],
+      :authorized_users => []
     }
-      
+
     def initialize
       @default_options = self.class.default_options
     end
@@ -159,7 +167,7 @@ module Omnigollum
     def eval_omniauth_config(&block)
       self.instance_eval(&block)
     end
-      
+
     # Catches missing methods we haven't implemented, but which omniauth accepts
     # in its config block.
     #
@@ -173,8 +181,8 @@ module Omnigollum
       config  = Omnigollum::Config.new
       
       options = app.settings.respond_to?(:omnigollum) ?
-        config.default_options.merge(app.settings.send(:omnigollum)) :
-        config.default_options
+      config.default_options.merge(app.settings.send(:omnigollum)) :
+      config.default_options
       
       # Set omniauth path prefix based on options
       OmniAuth.config.path_prefix = options[:route_prefix] + OmniAuth.config.path_prefix
@@ -184,13 +192,13 @@ module Omnigollum
         OmniAuth.config.test_mode = true 
         OmniAuth.config.mock_auth[:default] = {
           'uid' => '12345',
-            "info" => {
+          "info" => {
             "email"  => "user@example.com",
             "name"   => "example user"
-          },
-          'provider' => 'local'
-        }
-      end
+            },
+            'provider' => 'local'
+          }
+        end
       # Register helpers
       app.helpers Helpers
       
@@ -246,8 +254,8 @@ module Omnigollum
             # Update gollum's author hash, so commits are recorded correctly
             session['gollum.author'] = {
               :name => user.nickname ?
-                user.name + ' (' + user.nickname + ')' :
-                user.name,
+              user.name + ' (' + user.nickname + ')' :
+              user.name,
               :email => user.email
             }
 

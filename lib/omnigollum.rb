@@ -31,12 +31,6 @@ module Omnigollum
         @nickname = hash['info']['nickname'].to_s.strip if hash['info'].has_key?('nickname')
         
         @provider = hash['provider']
-
-        # do not check access restrictions if no users are specified
-        unless options[:authorized_users].empty?
-          # raise if authenticated user's email is not specified in access control
-          raise OmniauthUserInitError, "User not authorized for access" unless options[:authorized_users].include?(@email)
-        end
   
         self
       end
@@ -249,6 +243,16 @@ module Omnigollum
         begin
           if !request.env['omniauth.auth'].nil? 
             user = Omnigollum::Models::OmniauthUser.new(request.env['omniauth.auth'], options)
+            
+            # Check authorized users
+            if !options[:authorized_users].empty? && !options[:authorized_users].include?(user.email) && 
+               !options[:authorized_users].include?(user.nickname)
+              @title   = 'Authorization failed'
+              @subtext = 'User was not found in the authorized users list'
+              @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?
+              show_login
+            end
+            
             session[:omniauth_user] = user
             
             # Update gollum's author hash, so commits are recorded correctly
@@ -262,7 +266,7 @@ module Omnigollum
             redirect request.env['omniauth.origin']
           elsif !user_authed?
             @title   = 'Authentication failed'
-            @subtext = "Omniauth experienced an error processing your request"
+            @subtext = 'Omniauth experienced an error processing your request'
             @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?
             show_login
           end

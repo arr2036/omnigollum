@@ -48,14 +48,14 @@ By default, any authenticated user will be able to access the protected routes. 
 `authorized_users` accepts an array of emails. Users must authenticate with one of these authorized emails in order to be allowed access.
 
 ```ruby
-options[:authorized_users] = ["john@fourthcoffee.com", "susan@fourthcoffee.com", "james@fourthcoffee.com"]
+options[:authorized_users] = ["example0@example.org", "example1@example.org", "example2@example.org"]
 ```
 
 Instead of setting these directly, you can use an [env var](http://www.12factor.net/config), maybe like this:
 
 ```ruby
 # in .env, or other
-# OMNIGOLLUM_AUTHORIZED_USERS=john@fourthcoffee.com,susan@fourthcoffee.com,james@fourthcoffee.com
+# OMNIGOLLUM_AUTHORIZED_USERS=example0@example.org,example1@example.org,example2@example.org
 
 options[:authorized_users] = ENV["OMNIGOLLUM_AUTHORIZED_USERS"].split(",")
 ```

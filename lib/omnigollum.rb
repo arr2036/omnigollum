@@ -136,7 +136,7 @@ module Omnigollum
       :path_templates => "#{dir}/templates",
       :default_name   => nil,
       :default_email  => nil,
-      :provider_names => []
+      :provider_names => [],
       :authorized_users => []
     }
       

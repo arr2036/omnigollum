@@ -257,9 +257,9 @@ module Omnigollum
             
             # Update gollum's author hash, so commits are recorded correctly
             session['gollum.author'] = {
-              :name => user.nickname ?
-              user.name + ' (' + user.nickname + ')' :
-              user.name,
+              :name => user.name ?
+              user.name :
+              user.nickname,
               :email => user.email
             }
 

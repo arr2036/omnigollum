@@ -1,0 +1,69 @@
+# Example gollum config with omnigollum authentication
+# gollum ../wiki --config config.rb
+#
+# or run from source with
+#
+# bundle exec bin/gollum ../wiki/ --config config.rb
+
+# Remove const to avoid
+# warning: already initialized constant FORMAT_NAMES
+#
+# only remove if it's defined.
+# constant Gollum::Page::FORMAT_NAMES not defined (NameError)
+Gollum::Page.send :remove_const, :FORMAT_NAMES if defined? Gollum::Page::FORMAT_NAMES
+# limit to one format
+Gollum::Page::FORMAT_NAMES = { :markdown  => "Markdown" }
+
+=begin
+Valid formats are:
+{ :markdown  => "Markdown",
+  :textile   => "Textile",
+  :rdoc      => "RDoc",
+  :org       => "Org-mode",
+  :creole    => "Creole",
+  :rest      => "reStructuredText",
+  :asciidoc  => "AsciiDoc",
+  :mediawiki => "MediaWiki",
+  :pod       => "Pod" }
+=end
+
+# Specify the path to the Wiki.
+gollum_path = '/home/gollum/wiki'
+Precious::App.set(:gollum_path, gollum_path)
+
+# Specify the wiki options.
+wiki_options = {
+  :live_preview => false,
+  :allow_uploads => true,
+}
+Precious::App.set(:wiki_options, wiki_options)
+
+# Set as Sinatra environment as production (no stack traces)
+Precious::App.set(:environment, :production)
+
+# Setup Omniauth via Omnigollum.
+require 'omnigollum'
+require 'omniauth-ldap'
+
+options = {
+  # OmniAuth::Builder block is passed as a proc
+  :providers => Proc.new do
+    provider :ldap,
+      :host => '127.0.0.1',
+      :port => 389,
+      :method => :plain,
+      :base => 'dc=example,dc=com',
+      :uid => 'uid',
+      :bind_dn: 'cn=`manager,dc=example,dc=com',
+      :password: 'password',
+  end,
+  :dummy_auth => false,
+  # Make the entire wiki private
+  :protected_routes => ['/*'],
+  # Specify commiter as just the user name
+  :author_format => Proc.new { |user| user.name },
+}
+
+# :omnigollum options *must* be set before the Omnigollum extension is registered
+Precious::App.set(:omnigollum, options)
+Precious::App.register Omnigollum::Sinatra

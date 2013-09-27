@@ -137,7 +137,8 @@ module Omnigollum
       :default_name   => nil,
       :default_email  => nil,
       :provider_names => [],
-      :authorized_users => []
+      :authorized_users => [],
+      :author_format => Proc.new { |user| user.nickname ? user.name + ' (' + user.nickname + ')' : user.name },
     }
       
     def initialize
@@ -257,9 +258,7 @@ module Omnigollum
             
             # Update gollum's author hash, so commits are recorded correctly
             session['gollum.author'] = {
-              :name => user.nickname ?
-              user.name + ' (' + user.nickname + ')' :
-              user.name,
+              :name => options[:author_format].call(user),
               :email => user.email
             }
 

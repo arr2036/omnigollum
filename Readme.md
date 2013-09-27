@@ -2,7 +2,7 @@
 
 ## Quick Installation/Configuration
 
-```
+```sh
 $ git clone https://github.com/arr2036/omnigollum.git
 $ cd omnigollum
 $ gem build omnigollum.gemspec
@@ -24,8 +24,9 @@ $ gollum --config config.rb
 ### Manual
 
 Clone into your ruby library path.
-
-    git clone git://github.com/arr2036/omnigollum.git
+```sh
+$ git clone git://github.com/arr2036/omnigollum.git
+```
 
 ## Configuration
 

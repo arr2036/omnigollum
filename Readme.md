@@ -1,5 +1,24 @@
 # omnigollum - omniauth meets gollum
 
+## Quick Installation/Configuration
+
+```
+$ git clone https://github.com/arr2036/omnigollum.git
+$ cd omnigollum
+$ gem build omnigollum.gemspec
+$ gem install omnigollum*.gem
+```
+
+```sh
+$ cp config.rb.example config.rb
+```
+Customize config.rb to use your preferred omniauth strategy.
+
+Execute via Gollum
+```sh
+$ gollum --config config.rb
+```
+
 ## Installation
 
 ### Manual

@@ -60,6 +60,8 @@ options = {
   :dummy_auth => false,
   # Make the entire wiki private
   :protected_routes => ['/*'],
+  # Specify commiter as just the user name
+  :author_format => Proc.new { |user| user.name },
 }
 
 # :omnigollum options *must* be set before the Omnigollum extension is registered

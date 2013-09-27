@@ -1,13 +1,13 @@
 Gem::Specification.new do |s| 
   s.name              = "omnigollum"
-  s.version           = '0.1.0'
+  s.version           = '0.1.1'
   s.date              = Time.now.strftime('%Y-%m-%d')
-  s.summary           =
-        "Omnigollum makes it easy to use OmniAuth with Gollum"
+  s.summary           = "Omnigollum makes it easy to use OmniAuth with Gollum"
   s.homepage          = "https://github.com/arr2036/omnigollum"
-  s.email             = "cockmomgler@gmail.com"
+  s.email             = "a.cudbardb@gmail.com"
   s.authors           = [ "Arran Cudbard-Bell", "Tenshi Hinanawi" ]
-  
+  s.licenses	      = [ "MIT" ]
+
   s.rdoc_options = ["--charset=UTF-8"]
   s.extra_rdoc_files = %w[Readme.md LICENSE]
   

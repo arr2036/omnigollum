@@ -20,12 +20,8 @@ $ gollum --config config.rb
 ```
 
 ## Installation
-
-### Manual
-
-Clone into your ruby library path.
 ```sh
-$ git clone git://github.com/arr2036/omnigollum.git
+$ gem install omnigollum
 ```
 
 ## Configuration

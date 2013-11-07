@@ -122,6 +122,8 @@ module Omnigollum
         '/create',
         '/edit/*',
         '/edit',
+        '/rename/*',
+        '/rename/',
         '/delete/*',
         '/delete'],
 

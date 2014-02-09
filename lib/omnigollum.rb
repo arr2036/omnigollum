@@ -97,6 +97,13 @@ module Omnigollum
       end
     end
 
+    def show_error
+      options = settings.send(:omnigollum)
+      auth_config
+      require options[:path_views] + '/error'
+      halt mustache Omnigollum::Views::Error
+    end
+
     def commit_message
       if user_authed?
         user = get_user
@@ -241,7 +248,7 @@ module Omnigollum
         @title    = 'Authentication failed'
         @subtext = "Provider did not validate your credentials (#{params[:message]}) - please retry or choose another login service"
         @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?
-        show_login
+        show_error
       end
 
       app.before options[:route_prefix] + '/auth/:name/callback' do
@@ -255,7 +262,7 @@ module Omnigollum
               @title   = 'Authorization failed'
               @subtext = 'User was not found in the authorized users list'
               @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?
-              show_login
+              show_error
             end
 
             session[:omniauth_user] = user
@@ -271,13 +278,13 @@ module Omnigollum
             @title   = 'Authentication failed'
             @subtext = 'Omniauth experienced an error processing your request'
             @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?
-            show_login
+            show_error
           end
         rescue StandardError => fail_reason
           @title   = 'Authentication failed'
           @subtext = fail_reason
           @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?
-          show_login
+          show_error
         end
       end
 

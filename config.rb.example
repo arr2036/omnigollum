@@ -54,8 +54,8 @@ options = {
       :method => :plain,
       :base => 'dc=example,dc=com',
       :uid => 'uid',
-      :bind_dn: 'cn=`manager,dc=example,dc=com',
-      :password: 'password',
+      :bind_dn => 'cn=manager,dc=example,dc=com',
+      :password => 'password'
   end,
   :dummy_auth => false,
   # Make the entire wiki private

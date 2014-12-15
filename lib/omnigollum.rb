@@ -256,9 +256,17 @@ module Omnigollum
           if !request.env['omniauth.auth'].nil?
             user = Omnigollum::Models::OmniauthUser.new(request.env['omniauth.auth'], options)
 
+            case (authorized_users = options[:authorized_users])
+            when Regexp
+              user_authorized = (user.email =~ authorized_users)
+            when Array
+              user_authorized = authorized_users.include?(user.email) || authorized_users.include?(user.nickname)
+            else
+              user_authorized = true
+            end
+
             # Check authorized users
-            if !options[:authorized_users].empty? && !options[:authorized_users].include?(user.email) &&
-               !options[:authorized_users].include?(user.nickname)
+            if !user_authorized
               @title   = 'Authorization failed'
               @subtext = 'User was not found in the authorized users list'
               @auth_params = "?origin=#{CGI.escape(request.env['omniauth.origin'])}" unless request.env['omniauth.origin'].nil?

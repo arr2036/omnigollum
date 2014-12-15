@@ -35,6 +35,7 @@ Precious::App.set(:gollum_path, gollum_path)
 wiki_options = {
   :live_preview => false,
   :allow_uploads => true,
+  :allow_editing => true
 }
 Precious::App.set(:wiki_options, wiki_options)
 

@@ -150,6 +150,7 @@ module Omnigollum
       :provider_names => [],
       :authorized_users => [],
       :author_format => Proc.new { |user| user.nickname ? user.name + ' (' + user.nickname + ')' : user.name },
+      :author_email => Proc.new { |user| user.email }
     }
 
     def initialize
@@ -278,7 +279,7 @@ module Omnigollum
             # Update gollum's author hash, so commits are recorded correctly
             session['gollum.author'] = {
               :name => options[:author_format].call(user),
-              :email => user.email
+              :email => options[:author_email].call(user)
             }
 
             redirect request.env['omniauth.origin']

@@ -85,7 +85,7 @@ Precious::App.register Omnigollum::Sinatra
 
 ### Gollum
 You can (optionally) apply the patches here, to get a neat little auth
-status widget in the top right corner of the page https://github.com/arr2036/gollum/commit/30857db6ba5a2100c0d392cb0de205e644430d13
+status widget in the top right corner of the page https://github.com/arr2036/gollum/commit/dd1fdad59d9f12bfe637704c0101af96aaa1a7e4
 
 
 

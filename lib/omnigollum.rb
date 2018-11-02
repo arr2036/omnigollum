@@ -14,11 +14,15 @@ module Omnigollum
 
     class OmniauthUser < User
       def initialize(hash, options)
+        sleep 1
         # Validity checks, don't trust providers
         @uid = hash['uid'].to_s.strip
         raise OmniauthUserInitError, 'Insufficient data from authentication provider, uid not provided or empty' if @uid.empty?
 
+        @nickname = hash['info']['nickname'].to_s.strip if hash['info'].key?('nickname')
+
         @name = hash['info']['name'].to_s.strip if hash['info'].key?('name')
+        @name = @nickname if !@name || @name.empty?
         @name = options[:default_name] if !@name || @name.empty?
 
         raise OmniauthUserInitError, 'Insufficient data from authentication provider, name not provided or empty' if !@name || @name.empty?
@@ -27,8 +31,6 @@ module Omnigollum
         @email = options[:default_email] if !@email || @email.empty?
 
         raise OmniauthUserInitError, 'Insufficient data from authentication provider, email not provided or empty' if !@email || @email.empty?
-
-        @nickname = hash['info']['nickname'].to_s.strip if hash['info'].key?('nickname')
 
         @provider = hash['provider']
 

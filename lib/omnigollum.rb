@@ -222,6 +222,7 @@ module Omnigollum
 
       # Populates instance variables used to display currently logged in user
       app.before '/*' do
+        @omnigollum_enabled = true
         @user_authed = user_authed?
         @user        = get_user
       end

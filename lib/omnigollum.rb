@@ -122,19 +122,21 @@ module Omnigollum
     class << self; attr_accessor :default_options; end
 
     @default_options = {
+      # Gollum 4 uses /create, /create/*, etc, while Gollum 5 uses
+      # /gollum/create, /gollum/create/*, etc.  Protect both by
+      # default so that omnigollum works with either out of the box.
       :protected_routes => [
-        '/revert/*',
-        '/revert',
-        '/create/*',
-        '/create',
-        '/edit/*',
-        '/edit',
-        '/rename/*',
-        '/rename/',
-        '/upload/*',
-        '/upload/',
-        '/delete/*',
-        '/delete'],
+                            'create',
+                            'delete',
+                            'edit',
+                            'rename',
+                            'revert',
+                            'upload',
+                           ].map { |x|
+        ["/#{x}", "/#{x}/*"].map { |y|
+          [y, "/gollum#{y}"]
+        }
+      }.flatten,
 
       :route_prefix => '/__omnigollum__',
       :dummy_auth   => true,

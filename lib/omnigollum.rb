@@ -17,13 +17,25 @@ module Omnigollum
         # Validity checks, don't trust providers
         @uid = hash['uid'].to_s.strip
         raise OmniauthUserInitError, "Insufficient data from authentication provider, uid not provided or empty" if @uid.empty?
-
+        
+        
+        buckets = ['extra', 'info']
+        for b in buckets
+          if hash.has_key?(b)
+            for l in hash[b].keys
+              hash[b][l.downcase] = hash[b][l]
+            end
+          end
+        end
+        
         @name = hash['info']['name'].to_s.strip if hash['info'].has_key?('name')
+        @name = hash['extra']['cn'] if hash.has_key?('extra') && hash['extra'].has_key?('cn') && (!@name || @name.empty?)
         @name = options[:default_name] if !@name || @name.empty?
 
         raise OmniauthUserInitError, "Insufficient data from authentication provider, name not provided or empty" if !@name || @name.empty?
 
         @email = hash['info']['email'].to_s.strip if hash['info'].has_key?('email')
+        @email = hash['extra']['user'] if hash.has_key?('extra') && hash['extra'].has_key?('user') && (!@email || @email.empty?)
         @email = options[:default_email] if !@email || @email.empty?
 
         raise OmniauthUserInitError, "Insufficient data from authentication provider, email not provided or empty" if !@email || @email.empty?
